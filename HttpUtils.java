@@ -1,7 +1,10 @@
 package com.data.collector.utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +13,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -77,6 +81,28 @@ public class HttpUtils {
             Document doc = Jsoup.parse(is, "UTF-8", "http://www.ahzfcg.gov.cn/");
             Elements linksE = doc.select("li > a");
             List<String> links = linksE.eachAttr("href");
+            int index = 0;
+            for(String link: links){
+                
+                CloseableHttpClient hc1 = HttpClients.createDefault();
+                HttpGet hg = new HttpGet("http://www.ahzfcg.gov.cn/"+link);
+                CloseableHttpResponse response = hc1.execute(hg);
+                InputStream is1 = response.getEntity().getContent();
+                
+                File targetFile = new File("c:\\test\\"+index+".html");
+                index++;
+                OutputStream outStream = new FileOutputStream(targetFile);
+                
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = is1.read(buffer)) != -1) {
+                    outStream.write(buffer, 0, bytesRead);
+                }
+                is1.close();
+                outStream.close();
+                hc1.close();
+            }
+            
         }
     }
     
